@@ -107,6 +107,166 @@ server.tool(
     },
 );
 
+// Register get-cryptocurrency-categories tool
+server.tool(
+    "get-cryptocurrency-categories",
+    "Get a list of all cryptocurrency categories.",
+    {
+        limit: z
+            .string()
+            .optional()
+            .describe("Number of results (default: 100)"),
+        sort: z
+            .string()
+            .optional()
+            .describe("Field to sort by (e.g., 'name', 'market_cap')"),
+    },
+    async (params) => {
+        const defaultParams = {
+            limit: "100",
+            ...params,
+        };
+
+        const data = await makeApiRequest(
+            "/cryptocurrency/categories",
+            defaultParams,
+        );
+
+        if (!data) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: "Failed to retrieve cryptocurrency categories",
+                    },
+                ],
+            };
+        }
+
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: JSON.stringify(data, null, 2),
+                },
+            ],
+        };
+    },
+);
+
+// Register get-cryptocurrency-category-details tool
+server.tool(
+    "get-cryptocurrency-category-details",
+    "Get detailed information for a specific cryptocurrency category, including top coins.",
+    {
+        id: z.string().describe("The ID of the category (e.g., 'defi', 'nft')"),
+        limit: z
+            .string()
+            .optional()
+            .describe("Number of coins to return within the category (default: 100)"),
+        convert: z
+            .string()
+            .optional()
+            .describe("Currency for market data (e.g., 'USD')"),
+    },
+    async (params) => {
+        if (!params.id) { // This check is technically redundant due to Zod validation
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: "Error: 'id' parameter is required for category details",
+                    },
+                ],
+            };
+        }
+
+        const defaultParams = {
+            limit: "100",
+            convert: "USD",
+            ...params,
+        };
+
+        const data = await makeApiRequest(
+            "/cryptocurrency/category", // Assuming endpoint takes 'id' as a query param
+            defaultParams,
+        );
+
+        if (!data) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: "Failed to retrieve cryptocurrency category details",
+                    },
+                ],
+            };
+        }
+
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: JSON.stringify(data, null, 2),
+                },
+            ],
+        };
+    },
+);
+
+// Register get-trending-cryptocurrencies tool
+server.tool(
+    "get-trending-cryptocurrencies",
+    "Get the latest trending cryptocurrencies.",
+    {
+        limit: z
+            .string()
+            .optional()
+            .describe("Number of results (default: 10, max: 100)"),
+        time_period: z
+            .string()
+            .optional()
+            .describe("Time period for trending data (e.g., '24h', '7d', '30d')"),
+        convert: z
+            .string()
+            .optional()
+            .describe("Currency to convert prices to (e.g., 'USD', 'EUR')"),
+    },
+    async (params) => {
+        const defaultParams = {
+            limit: "10",
+            time_period: "24h",
+            convert: "USD",
+            ...params,
+        };
+
+        const data = await makeApiRequest(
+            "/cryptocurrency/trending/latest",
+            defaultParams,
+        );
+
+        if (!data) {
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: "Failed to retrieve trending cryptocurrencies",
+                    },
+                ],
+            };
+        }
+
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: JSON.stringify(data, null, 2),
+                },
+            ],
+        };
+    },
+);
+
 // Register cryptocurrency quotes tool
 server.tool(
     "get-cryptocurrency-quotes",
